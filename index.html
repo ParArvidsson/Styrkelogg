@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#111318">
+  <title>Styrkelogg 3×/vecka</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <style>
+    :root{
+      --bg:#0b0d11;--panel:#151821;--panel2:#1d2230;--text:#f4f6fa;--muted:#9ca5b6;
+      --accent:#e5b94f;--accent2:#7cc7ff;--ok:#63d69b;--danger:#ff7777;--line:#2b3140;
+      --shadow:0 10px 30px rgba(0,0,0,.28);--radius:18px
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:linear-gradient(180deg,#090b0f,#11151d 55%,#0b0d11);color:var(--text);
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;min-height:100vh}
+    button,input,select,textarea{font:inherit}
+    button{cursor:pointer}
+    .wrap{max-width:920px;margin:auto;padding:18px 14px 105px}
+    header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:4px 0 18px}
+    .brand h1{font-size:24px;margin:0}.brand p{margin:4px 0 0;color:var(--muted);font-size:13px}
+    .pill{background:var(--panel2);border:1px solid var(--line);padding:8px 12px;border-radius:999px;color:var(--accent);font-weight:800}
+    .tabs{position:fixed;z-index:20;left:0;right:0;bottom:0;background:rgba(10,12,16,.94);backdrop-filter:blur(18px);
+      border-top:1px solid var(--line);display:flex;justify-content:center;padding:8px max(8px,env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left))}
+    .tabs-inner{display:grid;grid-template-columns:repeat(5,1fr);width:min(920px,100%);gap:5px}
+    .tab{border:0;background:transparent;color:var(--muted);padding:9px 4px;border-radius:12px;font-size:11px}
+    .tab strong{display:block;font-size:20px;line-height:20px;margin-bottom:4px}
+    .tab.active{background:var(--panel2);color:var(--accent)}
+    .view{display:none}.view.active{display:block}
+    .card{background:rgba(21,24,33,.96);border:1px solid var(--line);border-radius:var(--radius);padding:16px;margin:12px 0;box-shadow:var(--shadow)}
+    .grid{display:grid;gap:12px}.grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .metric{background:var(--panel2);padding:14px;border-radius:14px;border:1px solid var(--line)}
+    .metric span{display:block;color:var(--muted);font-size:12px}.metric b{font-size:24px}
+    h2{font-size:20px;margin:0 0 12px}h3{font-size:17px;margin:0}
+    .muted{color:var(--muted)}.small{font-size:12px}
+    .btn{border:1px solid var(--line);background:var(--panel2);color:var(--text);padding:11px 14px;border-radius:12px;font-weight:750}
+    .btn.primary{background:var(--accent);color:#17130a;border-color:transparent}
+    .btn.ok{background:var(--ok);color:#07140e;border-color:transparent}
+    .btn.danger{color:var(--danger)}
+    .btnrow{display:flex;flex-wrap:wrap;gap:8px}
+    label{color:var(--muted);font-size:12px}
+    input,select,textarea{width:100%;background:#0e1117;border:1px solid var(--line);color:var(--text);border-radius:10px;padding:10px}
+    .weekbar{display:grid;grid-template-columns:44px 1fr 44px;gap:8px;align-items:center}
+    .weekbar button{height:42px}
+    .exercise{border-top:1px solid var(--line);padding:15px 0}.exercise:first-of-type{border-top:0}
+    .ex-head{display:flex;justify-content:space-between;align-items:start;gap:12px;margin-bottom:10px}
+    .badge{display:inline-block;border-radius:999px;padding:4px 8px;font-size:11px;background:#29251a;color:var(--accent);margin-top:5px}
+    .setrow{display:grid;grid-template-columns:36px 70px 1fr 64px;gap:8px;align-items:center;margin:7px 0}
+    .setnum{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:var(--panel2);font-weight:800}
+    .check{appearance:none;width:28px;height:28px;border:2px solid #596278;border-radius:8px;padding:0;background:#0e1117}
+    .check:checked{background:var(--ok);border-color:var(--ok)}
+    .check:checked:after{content:"✓";display:grid;place-items:center;color:#092015;font-weight:1000;font-size:20px}
+    .weight{font-size:16px;font-weight:800;text-align:center}
+    .reps{text-align:center}
+    .progress{height:9px;background:#0e1117;border-radius:999px;overflow:hidden;border:1px solid var(--line)}
+    .progress>div{height:100%;background:linear-gradient(90deg,var(--accent),var(--ok))}
+    .session-done{outline:2px solid var(--ok)}
+    .calendar{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+    .daychip{padding:12px 8px;background:var(--panel2);border:1px solid var(--line);border-radius:12px;text-align:center}
+    .daychip.done{border-color:var(--ok);color:var(--ok)}
+    canvas{width:100%;height:230px;background:#0e1117;border-radius:12px;border:1px solid var(--line)}
+    .history-item{display:flex;justify-content:space-between;gap:12px;padding:11px 0;border-top:1px solid var(--line)}
+    .history-item:first-child{border-top:0}
+    details{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:12px;margin:8px 0}
+    summary{font-weight:800}
+    .timer{font-variant-numeric:tabular-nums;font-size:34px;font-weight:900;color:var(--accent)}
+    .toast{position:fixed;left:50%;bottom:95px;transform:translateX(-50%);background:#242a38;border:1px solid var(--line);
+      padding:11px 15px;border-radius:999px;z-index:50;opacity:0;pointer-events:none;transition:.2s}
+    .toast.show{opacity:1}
+    @media(max-width:620px){.grid.two{grid-template-columns:1fr}.setrow{grid-template-columns:34px 62px 1fr 58px}.wrap{padding-left:10px;padding-right:10px}}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand"><h1>STYRKELLOGG</h1><p>Tung helkropp • 3 pass per vecka</p></div>
+    <div class="pill" id="weekPill">Vecka 1</div>
+  </header>
+
+  <section id="dashboard" class="view active"></section>
+  <section id="workout" class="view"></section>
+  <section id="history" class="view"></section>
+  <section id="progressView" class="view"></section>
+  <section id="settings" class="view"></section>
+</div>
+
+<nav class="tabs"><div class="tabs-inner">
+  <button class="tab active" data-view="dashboard"><strong>⌂</strong>Översikt</button>
+  <button class="tab" data-view="workout"><strong>🏋</strong>Pass</button>
+  <button class="tab" data-view="history"><strong>✓</strong>Historik</button>
+  <button class="tab" data-view="progressView"><strong>↗</strong>Utveckling</button>
+  <button class="tab" data-view="settings"><strong>⚙</strong>Inställningar</button>
+</div></nav>
+<div class="toast" id="toast"></div>
+
+<script>
+const PROGRAM = {
+  A: [
+    {name:"Knäböj", type:"Huvudlyft", rest:210, blocks:[[4,5],[5,4],[5,3],[3,5]]},
+    {name:"Bänkpress", type:"Huvudlyft", rest:180, blocks:[[4,6],[5,5],[5,3],[3,6]]},
+    {name:"Skivstångsrodd", type:"Basövning", rest:150, blocks:[[4,6],[4,6],[5,5],[3,6]]},
+    {name:"Rumänska marklyft", type:"Basövning", rest:150, blocks:[[3,8],[4,6],[4,5],[2,8]]},
+    {name:"Chins", type:"Basövning", rest:120, blocks:[[3,6],[4,5],[4,4],[2,6]]}
+  ],
+  B: [
+    {name:"Marklyft", type:"Huvudlyft", rest:240, blocks:[[3,5],[4,4],[5,2],[2,5]]},
+    {name:"Militärpress", type:"Huvudlyft", rest:180, blocks:[[4,6],[5,4],[5,3],[3,6]]},
+    {name:"Frontböj", type:"Basövning", rest:180, blocks:[[3,6],[4,5],[4,4],[2,6]]},
+    {name:"Lutande bänkpress", type:"Basövning", rest:150, blocks:[[3,8],[4,6],[4,5],[2,8]]},
+    {name:"Viktade chins/latsdrag", type:"Basövning", rest:120, blocks:[[4,6],[4,6],[5,4],[3,6]]}
+  ],
+  C: [
+    {name:"Pausböj", type:"Huvudlyft", rest:180, blocks:[[4,5],[5,4],[5,3],[3,5]]},
+    {name:"Pausbänk", type:"Huvudlyft", rest:180, blocks:[[4,5],[5,4],[5,3],[3,5]]},
+    {name:"Pendlayrodd", type:"Basövning", rest:150, blocks:[[4,6],[4,6],[5,5],[3,6]]},
+    {name:"Hip thrust", type:"Basövning", rest:150, blocks:[[3,8],[4,6],[4,5],[2,8]]},
+    {name:"Dips", type:"Basövning", rest:120, blocks:[[3,8],[4,6],[4,5],[2,8]]}
+  ]
+};
+const DEFAULT = {week:1, selectedDay:"A", logs:{}, bodyweights:[], settings:{incrementUpper:2.5,incrementLower:5,units:"kg"}};
+let state = load();
+let timerInt=null, timerLeft=0;
+
+function load(){ try{return {...DEFAULT,...JSON.parse(localStorage.getItem("styrkelogg-v1")||"{}")}}catch(e){return structuredClone(DEFAULT)} }
+function save(){localStorage.setItem("styrkelogg-v1",JSON.stringify(state))}
+function key(w,d,e,s){return `${w}|${d}|${e}|${s}`}
+function sessionKey(w,d){return `${w}|${d}`}
+function blockForWeek(w){return Math.min(3,Math.floor((w-1)/3))}
+function isDeload(w){return [4,8,12].includes(w)}
+function planFor(ex,w){
+  let b=blockForWeek(w), p=ex.blocks[b];
+  return {sets:p[0],reps:p[1],deload:isDeload(w)};
+}
+function sessionEntries(w,d){
+  return PROGRAM[d].flatMap((ex,ei)=>{
+    let p=planFor(ex,w); return Array.from({length:p.sets},(_,si)=>state.logs[key(w,d,ei,si)]||{done:false,weight:"",reps:p.reps})
+  });
+}
+function sessionDone(w,d){
+  const a=sessionEntries(w,d); return a.length && a.every(x=>x.done);
+}
+function completedSets(w,d){
+  const a=sessionEntries(w,d); return [a.filter(x=>x.done).length,a.length];
+}
+function toast(t){let el=document.getElementById("toast");el.textContent=t;el.classList.add("show");setTimeout(()=>el.classList.remove("show"),1800)}
+
+function renderAll(){document.getElementById("weekPill").textContent=`Vecka ${state.week}`;renderDashboard();renderWorkout();renderHistory();renderProgress();renderSettings()}
+function renderDashboard(){
+  let done=["A","B","C"].filter(d=>sessionDone(state.week,d)).length;
+  let sets=["A","B","C"].reduce((n,d)=>n+completedSets(state.week,d)[0],0);
+  let total=["A","B","C"].reduce((n,d)=>n+completedSets(state.week,d)[1],0);
+  document.getElementById("dashboard").innerHTML=`
+    <div class="card">
+      <div class="weekbar">
+        <button class="btn" onclick="changeWeek(-1)">‹</button>
+        <div><label>Aktuell programvecka</label><select onchange="setWeek(this.value)">${Array.from({length:12},(_,i)=>`<option ${state.week==i+1?"selected":""}>${i+1}</option>`).join("")}</select></div>
+        <button class="btn" onclick="changeWeek(1)">›</button>
+      </div>
+    </div>
+    <div class="grid two">
+      <div class="metric"><span>Pass klara</span><b>${done}/3</b></div>
+      <div class="metric"><span>Set klara</span><b>${sets}/${total}</b></div>
+    </div>
+    <div class="card">
+      <h2>Veckans upplägg</h2>
+      <p class="muted">${isDeload(state.week)?"Deloadvecka: sänk vikterna cirka 10–15 % och lämna tydlig marginal.":"Arbeta tungt men tekniskt rent. Sikta normalt på 1–2 reps i reserv på huvudlyften."}</p>
+      <div class="progress"><div style="width:${total?sets/total*100:0}%"></div></div>
+      <div class="calendar" style="margin-top:14px">
+        ${["A","B","C"].map(d=>`<button class="daychip ${sessionDone(state.week,d)?"done":""}" onclick="openWorkout('${d}')"><b>Pass ${d}</b><br><span class="small">${completedSets(state.week,d)[0]}/${completedSets(state.week,d)[1]} set</span></button>`).join("")}
+      </div>
+    </div>
+    <div class="card">
+      <h2>Progressionsregel</h2>
+      <p class="muted">När samtliga arbetsset klaras med bra teknik och ungefär 1–2 reps i reserv: höj nästa motsvarande pass med ${state.settings.incrementUpper} kg för överkropp eller ${state.settings.incrementLower} kg för underkropp. Vid miss två gånger: sänk 7,5–10 % och bygg upp igen.</p>
+    </div>`;
+}
+function renderWorkout(){
+  let d=state.selectedDay, exercises=PROGRAM[d];
+  let [done,total]=completedSets(state.week,d);
+  document.getElementById("workout").innerHTML=`
+    <div class="card ${sessionDone(state.week,d)?"session-done":""}">
+      <div class="ex-head"><div><h2>Pass ${d} • Vecka ${state.week}</h2><div class="muted">${done}/${total} set klara</div></div>
+      <select style="width:100px" onchange="state.selectedDay=this.value;save();renderAll()">${["A","B","C"].map(x=>`<option ${d==x?"selected":""}>${x}</option>`).join("")}</select></div>
+      <div class="progress"><div style="width:${total?done/total*100:0}%"></div></div>
+      ${exercises.map((ex,ei)=>exerciseHTML(ex,ei,d)).join("")}
+      <label>Kommentar till passet</label>
+      <textarea rows="3" placeholder="Känsla, teknik, sömn, smärta, PR..." oninput="setNote('${sessionKey(state.week,d)}',this.value)">${(state.logs["note|"+sessionKey(state.week,d)]||"").replaceAll("<","&lt;")}</textarea>
+      <div class="btnrow" style="margin-top:12px">
+        <button class="btn primary" onclick="completeSession('${d}')">Markera hela passet klart</button>
+        <button class="btn danger" onclick="clearSession('${d}')">Nollställ passet</button>
+      </div>
+    </div>
+    <div class="card"><h2>Vilotimer</h2><div class="timer" id="timerText">${fmt(timerLeft)}</div><div class="btnrow">
+      <button class="btn" onclick="startTimer(120)">2:00</button><button class="btn" onclick="startTimer(180)">3:00</button>
+      <button class="btn" onclick="startTimer(240)">4:00</button><button class="btn danger" onclick="stopTimer()">Stoppa</button>
+    </div></div>`;
+}
+function exerciseHTML(ex,ei,d){
+  let p=planFor(ex,state.week);
+  let allDone=Array.from({length:p.sets},(_,si)=>(state.logs[key(state.week,d,ei,si)]||{}).done).every(Boolean);
+  return `<div class="exercise">
+    <div class="ex-head"><div><h3>${ex.name}</h3><span class="badge">${ex.type} • ${p.sets}×${p.reps}${p.deload?" • DELOAD":""}</span></div>
+    <input class="check" type="checkbox" ${allDone?"checked":""} onchange="toggleExercise('${d}',${ei},this.checked)" aria-label="Markera övning"></div>
+    ${Array.from({length:p.sets},(_,si)=>{
+      let k=key(state.week,d,ei,si),v=state.logs[k]||{done:false,weight:"",reps:p.reps};
+      return `<div class="setrow">
+        <div class="setnum">${si+1}</div>
+        <input class="reps" inputmode="numeric" value="${v.reps??p.reps}" onchange="setLog('${k}','reps',this.value)" aria-label="Reps">
+        <input class="weight" inputmode="decimal" placeholder="${state.settings.units}" value="${v.weight??""}" onchange="setLog('${k}','weight',this.value)" aria-label="Vikt">
+        <input class="check" type="checkbox" ${v.done?"checked":""} onchange="setLog('${k}','done',this.checked);if(this.checked)startTimer(${ex.rest})" aria-label="Set klart">
+      </div>`}).join("")}
+  </div>`;
+}
+function setLog(k,f,v){state.logs[k]={...(state.logs[k]||{}),[f]:v};save();renderAll()}
+function setNote(k,v){state.logs["note|"+k]=v;save()}
+function toggleExercise(d,ei,val){let p=planFor(PROGRAM[d][ei],state.week);for(let si=0;si<p.sets;si++){let k=key(state.week,d,ei,si);state.logs[k]={...(state.logs[k]||{reps:p.reps,weight:""}),done:val}}save();renderAll()}
+function completeSession(d){PROGRAM[d].forEach((ex,ei)=>toggleExerciseSilent(d,ei,true));save();renderAll();toast("Passet är klart ✓")}
+function toggleExerciseSilent(d,ei,val){let p=planFor(PROGRAM[d][ei],state.week);for(let si=0;si<p.sets;si++){let k=key(state.week,d,ei,si);state.logs[k]={...(state.logs[k]||{reps:p.reps,weight:""}),done:val}}}
+function clearSession(d){if(!confirm("Nollställa avbockning och vikter för detta pass?"))return;PROGRAM[d].forEach((ex,ei)=>{let p=planFor(ex,state.week);for(let si=0;si<p.sets;si++)delete state.logs[key(state.week,d,ei,si)]});delete state.logs["note|"+sessionKey(state.week,d)];save();renderAll()}
+function changeWeek(n){state.week=Math.min(12,Math.max(1,state.week+n));save();renderAll()}
+function setWeek(w){state.week=Number(w);save();renderAll()}
+function openWorkout(d){state.selectedDay=d;save();switchView("workout")}
+function renderHistory(){
+  let rows=[];
+  for(let w=12;w>=1;w--)for(let d of ["C","B","A"])if(sessionDone(w,d))rows.push({w,d,note:state.logs["note|"+sessionKey(w,d)]||""});
+  document.getElementById("history").innerHTML=`<div class="card"><h2>Genomförda pass</h2>
+    ${rows.length?rows.map(r=>`<div class="history-item"><div><b>Vecka ${r.w} • Pass ${r.d}</b><div class="small muted">${r.note||"Ingen kommentar"}</div></div><button class="btn" onclick="state.week=${r.w};state.selectedDay='${r.d}';save();switchView('workout')">Öppna</button></div>`).join(""):'<p class="muted">Inga fullständiga pass ännu.</p>'}
+  </div>
+  <div class="card"><h2>Kroppsvikt</h2><div class="grid two"><input id="bwDate" type="date" value="${new Date().toISOString().slice(0,10)}"><input id="bwValue" inputmode="decimal" placeholder="kg"></div>
+  <button class="btn primary" style="margin-top:9px" onclick="addBodyweight()">Lägg till</button>
+  ${(state.bodyweights||[]).slice().reverse().map(x=>`<div class="history-item"><span>${x.date}</span><b>${x.value} kg</b></div>`).join("")}</div>`;
+}
+function addBodyweight(){let date=document.getElementById("bwDate").value,value=document.getElementById("bwValue").value;if(!value)return;state.bodyweights.push({date,value:Number(value.replace(",","."))});state.bodyweights.sort((a,b)=>a.date.localeCompare(b.date));save();renderAll()}
+function bestWeightForExercise(name,w){
+  let vals=[];for(let d of ["A","B","C"])PROGRAM[d].forEach((ex,ei)=>{if(ex.name===name){let p=planFor(ex,w);for(let si=0;si<p.sets;si++){let v=state.logs[key(w,d,ei,si)];if(v&&v.done&&Number(String(v.weight).replace(",",".")))vals.push(Number(String(v.weight).replace(",",".")))}}});return vals.length?Math.max(...vals):null
+}
+function renderProgress(){
+  let names=[...new Set(Object.values(PROGRAM).flat().map(x=>x.name))];
+  let selected=state.progressExercise||"Knäböj"; if(!names.includes(selected))selected=names[0];
+  document.getElementById("progressView").innerHTML=`<div class="card"><h2>Viktutveckling</h2>
+    <select onchange="state.progressExercise=this.value;save();renderProgress()">${names.map(n=>`<option ${n==selected?"selected":""}>${n}</option>`).join("")}</select>
+    <canvas id="chart" width="800" height="300" style="margin-top:12px"></canvas>
+    <p class="small muted">Grafen visar högsta avklarade arbetsvikt per programvecka.</p></div>
+    <div class="card"><h2>Träningsvolym</h2>${[1,2,3,4,5,6,7,8,9,10,11,12].map(w=>{let vol=0;for(let d of ["A","B","C"])PROGRAM[d].forEach((ex,ei)=>{let p=planFor(ex,w);for(let si=0;si<p.sets;si++){let x=state.logs[key(w,d,ei,si)];if(x?.done)vol+=(Number(String(x.weight).replace(",","."))||0)*(Number(x.reps)||p.reps)}});return `<div class="history-item"><span>Vecka ${w}</span><b>${Math.round(vol).toLocaleString("sv-SE")} kg</b></div>`}).join("")}</div>`;
+  setTimeout(()=>drawChart(selected),0)
+}
+function drawChart(name){
+  let c=document.getElementById("chart");if(!c)return;let ctx=c.getContext("2d"),DPR=devicePixelRatio||1,rect=c.getBoundingClientRect();
+  c.width=rect.width*DPR;c.height=230*DPR;ctx.scale(DPR,DPR);let W=rect.width,H=230,p=35;
+  ctx.clearRect(0,0,W,H);let vals=Array.from({length:12},(_,i)=>bestWeightForExercise(name,i+1));
+  let max=Math.max(1,...vals.filter(x=>x!=null));ctx.strokeStyle="#2b3140";ctx.fillStyle="#9ca5b6";ctx.font="11px sans-serif";
+  for(let i=0;i<5;i++){let y=p+(H-2*p)*i/4;ctx.beginPath();ctx.moveTo(p,y);ctx.lineTo(W-p,y);ctx.stroke();ctx.fillText(Math.round(max*(1-i/4)),3,y+4)}
+  ctx.strokeStyle="#e5b94f";ctx.lineWidth=3;ctx.beginPath();let started=false;
+  vals.forEach((v,i)=>{if(v==null)return;let x=p+(W-2*p)*i/11,y=H-p-(H-2*p)*v/max;if(!started){ctx.moveTo(x,y);started=true}else ctx.lineTo(x,y)});ctx.stroke();
+  vals.forEach((v,i)=>{let x=p+(W-2*p)*i/11;ctx.fillStyle="#9ca5b6";ctx.fillText(i+1,x-3,H-10);if(v!=null){let y=H-p-(H-2*p)*v/max;ctx.fillStyle="#63d69b";ctx.beginPath();ctx.arc(x,y,5,0,Math.PI*2);ctx.fill()}})
+}
+function renderSettings(){
+  document.getElementById("settings").innerHTML=`
+    <div class="card"><h2>Progression</h2><div class="grid two">
+      <div><label>Överkropp, höjning</label><input inputmode="decimal" value="${state.settings.incrementUpper}" onchange="state.settings.incrementUpper=Number(this.value.replace(',','.'));save();renderAll()"></div>
+      <div><label>Underkropp, höjning</label><input inputmode="decimal" value="${state.settings.incrementLower}" onchange="state.settings.incrementLower=Number(this.value.replace(',','.'));save();renderAll()"></div>
+    </div></div>
+    <div class="card"><h2>Data</h2><div class="btnrow">
+      <button class="btn primary" onclick="exportData()">Exportera backup</button>
+      <label class="btn">Importera backup<input type="file" accept=".json" style="display:none" onchange="importData(this.files[0])"></label>
+      <button class="btn" onclick="exportCSV()">Exportera CSV</button>
+      <button class="btn danger" onclick="resetAll()">Radera all data</button>
+    </div></div>
+    <div class="card"><h2>Så använder du appen</h2>
+      <details open><summary>iPhone/iPad</summary><p class="muted">Öppna appen i Safari från en webbserver, tryck Dela och välj <b>Lägg till på hemskärmen</b>. Vid öppning direkt som fil fungerar loggning, men installation och offline-cache kan vara begränsad av iOS.</p></details>
+      <details><summary>Programstruktur</summary><p class="muted">Tre block om tre belastningsveckor följt av deload vecka 4, 8 och 12. Huvudlyften går gradvis från femmor och sexor mot tyngre treor och tvåor.</p></details>
+      <details><summary>Intensitet</summary><p class="muted">Starta med vikter som ger cirka 2 reps i reserv. Under tyngre veckor kan sista arbetssetet närma sig 1 rep i reserv, men undvik regelbundna grinders.</p></details>
+    </div>`;
+}
+function exportData(){download("styrkelogg-backup.json",JSON.stringify(state,null,2),"application/json")}
+function importData(file){if(!file)return;let r=new FileReader();r.onload=()=>{try{state={...DEFAULT,...JSON.parse(r.result)};save();renderAll();toast("Backup importerad")}catch(e){alert("Ogiltig backupfil")}};r.readAsText(file)}
+function exportCSV(){
+  let rows=[["vecka","pass","övning","set","reps","vikt","klart"]];
+  for(let w=1;w<=12;w++)for(let d of ["A","B","C"])PROGRAM[d].forEach((ex,ei)=>{let p=planFor(ex,w);for(let si=0;si<p.sets;si++){let x=state.logs[key(w,d,ei,si)]||{};rows.push([w,d,ex.name,si+1,x.reps??p.reps,x.weight??"",x.done?"ja":"nej"])}})
+  download("styrkelogg.csv",rows.map(r=>r.map(x=>`"${String(x).replaceAll('"','""')}"`).join(",")).join("\n"),"text/csv")
+}
+function download(name,text,type){let a=document.createElement("a");a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;a.click();URL.revokeObjectURL(a.href)}
+function resetAll(){if(confirm("Detta raderar all träningsdata. Fortsätta?")){localStorage.removeItem("styrkelogg-v1");state=structuredClone(DEFAULT);renderAll()}}
+function switchView(v){document.querySelectorAll(".view").forEach(x=>x.classList.remove("active"));document.getElementById(v).classList.add("active");document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("active",x.dataset.view===v));if(v==="progressView")setTimeout(()=>renderProgress(),0);scrollTo({top:0,behavior:"smooth"})}
+document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>switchView(b.dataset.view));
+function startTimer(sec){stopTimer();timerLeft=sec;updateTimer();timerInt=setInterval(()=>{timerLeft--;updateTimer();if(timerLeft<=0){stopTimer();navigator.vibrate?.([200,100,200]);toast("Vilan är klar")}},1000)}
+function stopTimer(){if(timerInt)clearInterval(timerInt);timerInt=null;if(timerLeft<0)timerLeft=0;updateTimer()}
+function updateTimer(){let el=document.getElementById("timerText");if(el)el.textContent=fmt(timerLeft)}
+function fmt(s){return `${Math.floor(s/60)}:${String(Math.max(0,s%60)).padStart(2,"0")}`}
+if("serviceWorker" in navigator && location.protocol.startsWith("http"))navigator.serviceWorker.register("sw.js").catch(()=>{});
+renderAll();
+</script>
+</body>
+</html>
